@@ -31,19 +31,28 @@ app.get("/api/categorias", async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener categorías:", err.message);
-    res.status(500).json({ error: "Error al obtener categorías", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Error al obtener categorías", details: err.message });
   }
 });
 
 app.get("/api/topsolicitudes", async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
-    const result = await pool.request().query("EXEC Maqu.TOP5_Solicitudes_Aceptadas");
+    const result = await pool
+      .request()
+      .query("EXEC Maqu.TOP5_Solicitudes_Aceptadas");
 
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las top 5 solicitudes:", err.message);
-    res.status(500).json({ error: "Error al obtener las solicitudes", details: err.message });
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener las solicitudes",
+        details: err.message,
+      });
   }
 });
 
@@ -55,31 +64,50 @@ app.get("/api/solicitudes", async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las solicitudes:", err.message);
-    res.status(500).json({ error: "Error al obtener las solicitudes", details: err.message });
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener las solicitudes",
+        details: err.message,
+      });
   }
 });
 
 app.get("/api/solisrechazadas", async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
-    const result = await pool.request().query("EXEC Maqu.Solicitudes_Rechazadas");
+    const result = await pool
+      .request()
+      .query("EXEC Maqu.Solicitudes_Rechazadas");
 
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las solicitudes:", err.message);
-    res.status(500).json({ error: "Error al obtener las solicitudes", details: err.message });
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener las solicitudes",
+        details: err.message,
+      });
   }
 });
 
 app.get("/api/solisaceptadas", async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
-    const result = await pool.request().query("EXEC Maqu.Solicitudes_Aceptadas");
+    const result = await pool
+      .request()
+      .query("EXEC Maqu.Solicitudes_Aceptadas");
 
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las solicitudes:", err.message);
-    res.status(500).json({ error: "Error al obtener las solicitudes", details: err.message });
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener las solicitudes",
+        details: err.message,
+      });
   }
 });
 
@@ -144,22 +172,22 @@ app.post("/api/buscar", async (req, res) => {
   }
 });
 
-app.get('/api/Maquinas_Categorias/:cat_ID', async (req, res) => {
+app.get("/api/Maquinas_Categorias/:cat_ID", async (req, res) => {
   const { cat_ID } = req.params;
 
   try {
     const pool = await sql.connect(dbConfig);
-    const result = await pool.request()
-      .input('cat_ID', sql.Int, cat_ID)
-      .execute('Maqu.Maquinas_Categorias');
-    
+    const result = await pool
+      .request()
+      .input("cat_ID", sql.Int, cat_ID)
+      .execute("Maqu.Maquinas_Categorias");
+
     res.json(result.recordset);
   } catch (error) {
-    console.error('Error al buscar máquinas:', error.message);
-    res.status(500).send('Error fetching machines by category');
+    console.error("Error al buscar máquinas:", error.message);
+    res.status(500).send("Error fetching machines by category");
   }
 });
-
 
 app.post("/api/insertarsolicitud", async (req, res) => {
   const {
@@ -196,26 +224,28 @@ app.post("/api/insertarsolicitud", async (req, res) => {
     const pool = await sql.connect(dbConfig);
 
     // Ejecutar el procedimiento almacenado
-    const result = await pool.request()
-      .input("cat_ID", sql.Int, category) // Asegúrate de que el ID de la categoría sea enviado desde el frontend
+    const result = await pool
+      .request()
+      .input("cat_ID", sql.Int, category)
       .input("sol_Marca", sql.NVarChar(150), brand)
       .input("sol_Horas", sql.NVarChar(10), operationHours)
       .input("sol_Titular", sql.NVarChar(100), titular)
       .input("sol_Descripcion", sql.NVarChar(sql.MAX), description)
-      .input("sol_Precio", sql.NVarChar(20), price || null) // Precio opcional
-      .input("sol_IMG_1", sql.NVarChar(sql.MAX), images[0]?.url || null) // Primer imagen
-      .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1]?.url || null) // Segunda imagen
-      .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2]?.url || null) // Tercera imagen
-      .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3]?.url || null) // Cuarta imagen
-      .input("sol_Comprobante", sql.NVarChar(sql.MAX), receipt?.url || null) // Comprobante
+      .input("sol_Precio", sql.NVarChar(20), price || null)
+      .input("sol_IMG_1", sql.NVarChar(sql.MAX), images[0]?.url || null)
+      .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1]?.url || null)
+      .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2]?.url || null)
+      .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3]?.url || null)
+      .input("sol_Comprobante", sql.NVarChar(sql.MAX), receipt?.url || null)
       .input("sol_NombreCliente", sql.NVarChar(200), client)
       .input("sol_Telefono_1", sql.NVarChar(50), phoneNumber)
-      .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null) // Opcional
+      .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null)
       .input("sol_Correo", sql.NVarChar(200), email)
       .execute("Maqu.UPD_InsertarSolicitud");
 
-    // Retornar el ID generado por el procedimiento almacenado
+    // Extraer el ID generado por el procedimiento almacenado
     const solicitudId = result.recordset[0]?.SolicitudID || null;
+
     res.status(201).json({
       message: "Solicitud creada exitosamente.",
       solicitudId,
