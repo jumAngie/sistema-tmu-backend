@@ -160,6 +160,75 @@ app.get('/api/Maquinas_Categorias/:cat_ID', async (req, res) => {
   }
 });
 
+
+app.post("/api/insertarsolicitud", async (req, res) => {
+  const {
+    titular,
+    category,
+    brand,
+    operationHours,
+    description,
+    images,
+    receipt,
+    price,
+    phoneNumber,
+    additionalPhoneNumber,
+    email,
+    client,
+  } = req.body;
+
+  try {
+    // Validar que haya exactamente 4 imágenes
+    if (!images || images.length !== 4) {
+      return res.status(400).json({
+        message: "Debe subir exactamente 4 imágenes.",
+      });
+    }
+
+    // Validar que se haya subido el comprobante
+    if (!receipt) {
+      return res.status(400).json({
+        message: "Debe subir un comprobante de pago.",
+      });
+    }
+
+    // Conexión a la base de datos
+    const pool = await sql.connect(dbConfig);
+
+    // Ejecutar el procedimiento almacenado
+    const result = await pool.request()
+      .input("cat_ID", sql.Int, category) // Asegúrate de que el ID de la categoría sea enviado desde el frontend
+      .input("sol_Marca", sql.NVarChar(150), brand)
+      .input("sol_Horas", sql.NVarChar(10), operationHours)
+      .input("sol_Titular", sql.NVarChar(100), titular)
+      .input("sol_Descripcion", sql.NVarChar(sql.MAX), description)
+      .input("sol_Precio", sql.NVarChar(20), price || null) // Precio opcional
+      .input("sol_IMG_1", sql.NVarChar(sql.MAX), images[0]?.url || null) // Primer imagen
+      .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1]?.url || null) // Segunda imagen
+      .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2]?.url || null) // Tercera imagen
+      .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3]?.url || null) // Cuarta imagen
+      .input("sol_Comprobante", sql.NVarChar(sql.MAX), receipt?.url || null) // Comprobante
+      .input("sol_NombreCliente", sql.NVarChar(200), client)
+      .input("sol_Telefono_1", sql.NVarChar(50), phoneNumber)
+      .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null) // Opcional
+      .input("sol_Correo", sql.NVarChar(200), email)
+      .execute("Maqu.UPD_InsertarSolicitud");
+
+    // Retornar el ID generado por el procedimiento almacenado
+    const solicitudId = result.recordset[0]?.SolicitudID || null;
+    res.status(201).json({
+      message: "Solicitud creada exitosamente.",
+      solicitudId,
+    });
+  } catch (error) {
+    console.error("Error al insertar la solicitud:", error);
+    res.status(500).json({
+      message: "Error al insertar la solicitud.",
+      error: error.message,
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor backend escuchando en http://localhost:${port}`);
 });
