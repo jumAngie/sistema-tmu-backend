@@ -207,12 +207,12 @@ app.post("/api/insertarsolicitud", async (req, res) => {
 
   try {
 
-    console.log("Datos recibidos en el backend:", req.body);
+    console.log("Datos recibidos en el backend: ", req.body);
     
     // Validar que haya exactamente 4 imágenes
     if (!images || images.length !== 4) {
       return res.status(400).json({
-        message: "Debe subir exactamente 4 imágenes.",
+        message: "Debe subir exactamente 4 imágenes. IMCANT" + images.length,
       });
     }
 
