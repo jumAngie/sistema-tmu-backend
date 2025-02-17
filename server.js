@@ -206,6 +206,9 @@ app.post("/api/insertarsolicitud", async (req, res) => {
   } = req.body;
 
   try {
+
+    console.log("Datos recibidos en el backend:", req.body);
+    
     // Validar que haya exactamente 4 imágenes
     if (!images || images.length !== 4) {
       return res.status(400).json({
