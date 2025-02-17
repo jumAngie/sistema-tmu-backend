@@ -236,7 +236,7 @@ app.post("/api/insertarsolicitud", async (req, res) => {
       .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1]|| null)
       .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2]|| null)
       .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3] || null)
-      .input("sol_Comprobante", sql.NVarChar(sql.MAX), receipt?.url || null)
+      .input("sol_Comprobante", sql.NVarChar(sql.MAX), receipt ? receipt.url : null)
       .input("sol_NombreCliente", sql.NVarChar(200), client)
       .input("sol_Telefono_1", sql.NVarChar(50), phoneNumber)
       .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null)
