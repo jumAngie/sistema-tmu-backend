@@ -301,14 +301,14 @@ app.post("/api/insertarsolicitudtemp", async (req, res) => {
       .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1] || null)
       .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2] || null)
       .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3] || null)
-      .input("sol_Comprobante", sql.NVarChar(sql.MAX), null) // Dejarlo NULO
+      .input("sol_Comprobante", sql.NVarChar(sql.MAX), null) 
       .input("sol_NombreCliente", sql.NVarChar(200), client)
       .input("sol_Telefono_1", sql.NVarChar(50), phoneNumber)
       .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null)
       .input("sol_Correo", sql.NVarChar(200), email)
       .execute("Maqu.UPD_InsertarSolicitud");
 
-    // Extraer el ID generado por el procedimiento almacenado
+   
     const solicitudId = result.recordset[0]?.SolicitudID || null;
 
     res.status(201).json({
@@ -323,6 +323,41 @@ app.post("/api/insertarsolicitudtemp", async (req, res) => {
     });
   }
 });
+
+router.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool
+      .request()
+      .input("usua_Email", sql.VarChar(100), email)
+      .input("usua_Password", sql.NVarChar(sql.MAX), password)
+      .execute("Acce.USP_VerificarUsuario");
+
+    
+    if (result.recordset.length === 0) {
+      return res.status(401).json({ message: "Credenciales incorrectas o usuario inactivo" });
+    }
+
+    const user = result.recordset[0];
+
+    res.status(200).json({
+      message: "Inicio de sesión exitoso",
+      user: {
+        id: user.usua_ID,
+        name: user.usua_Nombre,
+        email: user.usua_Email,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error en el login:", error);
+    res.status(500).json({ message: "Error en el servidor", error: error.message });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Servidor backend escuchando en http://localhost:${port}`);
