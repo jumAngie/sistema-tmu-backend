@@ -411,51 +411,70 @@ app.get("/api/solicitud_detalles", async (req, res) => {
 });
 
 app.post("/api/insertar_categorias", async (req, res) => {
-  try {
-    const { cat_Nombre, cat_Imagen } = req.body;
+  const { cat_Nombre, cat_Imagen } = req.body;
 
+  try {
+    // Validar que los campos no estén vacíos
     if (!cat_Nombre || !cat_Imagen) {
-      return res.status(400).json({ error: "Todos los campos son requeridos" });
+      return res.status(400).json({
+        message: "Todos los campos son requeridos.",
+      });
     }
 
-    const query = `
-      EXEC Maqu.Insertar_Categoria @cat_Nombre = ?, @cat_Imagen = ?;
-    `;
+    // Conexión a la base de datos
+    const pool = await sql.connect(dbConfig);
 
-    await pool.request()
+    // Ejecutar el procedimiento almacenado
+    const result = await pool
+      .request()
       .input("cat_Nombre", sql.VarChar(100), cat_Nombre)
       .input("cat_Imagen", sql.VarChar(255), cat_Imagen)
-      .query(query);
+      .execute("Maqu.Insertar_Categoria");
 
-    res.status(201).json({ message: "Categoría insertada correctamente" });
+    res.status(201).json({
+      message: "Categoría insertada correctamente."
+    });
   } catch (error) {
-    console.error("Error al insertar categoría:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error al insertar la categoría:", error);
+    res.status(500).json({
+      message: "Error al insertar la categoría.",
+      error: error.message,
+    });
   }
 });
 
-app.post("/api/actualizar_categorias", async (req, res) => {
-  try {
-    const { cat_ID, cat_Nombre, cat_Imagen } = req.body;
 
+app.post("/api/actualizar_categorias", async (req, res) => {
+  const { cat_ID, cat_Nombre, cat_Imagen } = req.body;
+
+  try {
+    // Validar que los campos no estén vacíos
     if (!cat_ID || !cat_Nombre || !cat_Imagen) {
-      return res.status(400).json({ error: "Todos los campos son requeridos" });
+      return res.status(400).json({
+        message: "Todos los campos son requeridos.",
+      });
     }
 
-    const query = `
-      EXEC Maqu.Actualizar_Categoria @cat_ID = ?, @cat_Nombre = ?, @cat_Imagen = ?;
-    `;
+    // Conexión a la base de datos
+    const pool = await sql.connect(dbConfig);
 
-    await pool.request()
-      .input("cat_ID",     sql.Int,          cat_ID)
+    // Ejecutar el procedimiento almacenado
+    const result = await pool
+      .request()
+      .input("cat_ID", sql.Int, cat_ID)
       .input("cat_Nombre", sql.VarChar(100), cat_Nombre)
       .input("cat_Imagen", sql.VarChar(255), cat_Imagen)
-      .query(query);
+      .execute("Maqu.Actualizar_Categoria");
 
-    res.status(201).json({ message: "Categoría actualizada correctamente" });
+    res.status(201).json({
+      message: "Categoría actualizada correctamente."
+    });
   } catch (error) {
-    console.error("Error al actualizar categoría:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error al actualizar la categoría:", error);
+    res.status(500).json({
+      message: "Error al actualizar la categoría.",
+      error: error.message,
+    });
   }
 });
 
