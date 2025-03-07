@@ -383,7 +383,7 @@ app.post("/api/rechazarsolicitud", async (req, res) => {
   }
 });
 
-app.post("/api/solicitud-detalles", async (req, res) => {
+app.post("/api/solicitud_detalles", async (req, res) => {
   const { sol_ID } = req.body; // Obtén el ID de la solicitud
 
   try {
