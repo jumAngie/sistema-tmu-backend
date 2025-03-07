@@ -358,6 +358,32 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+app.post("/api/rechazarsolicitud", async (req, res) => {
+  const { sol_ID, rejection} = req.body;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    // Ejecutar el procedimiento almacenado
+    const result = await pool
+      .request()
+      .input("sol_ID", sql.Int, sol_ID)
+      .input("sol_Motivo", sql.NVarChar(sql.MAX), rejection)
+      .execute("Maqu.Rechazar_Solicitud");
+
+    res.status(201).json({
+      message: "Solicitud Rechazada Existosamente.",
+    });
+  } catch (error) {
+    console.error("Error al rechazar la solicitud:", error);
+    res.status(500).json({
+      message: "Error al rechazar la solicitud. 500",
+      error: error.message,
+    });
+  }
+});
+
+
 
 app.listen(port, () => {
   console.log(`Servidor backend escuchando en http://localhost:${port}`);
