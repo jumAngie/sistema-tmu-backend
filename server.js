@@ -383,8 +383,8 @@ app.post("/api/rechazarsolicitud", async (req, res) => {
   }
 });
 
-app.post("/api/solicitud_detalles", async (req, res) => {
-  const { sol_ID } = req.body; // Obtén el ID de la solicitud
+app.get("/api/solicitud_detalles", async (req, res) => {
+  const { sol_ID } = req.query; // Tomamos el parámetro de la URL
 
   try {
     const pool = await sql.connect(dbConfig);
@@ -409,6 +409,7 @@ app.post("/api/solicitud_detalles", async (req, res) => {
     });
   }
 });
+
 
 
 
