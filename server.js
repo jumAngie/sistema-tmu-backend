@@ -383,6 +383,33 @@ app.post("/api/rechazarsolicitud", async (req, res) => {
   }
 });
 
+app.post("/api/solicitud-detalles", async (req, res) => {
+  const { sol_ID } = req.body; // Obtén el ID de la solicitud
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    // Ejecutar el procedimiento almacenado para obtener los detalles de la máquina
+    const result = await pool
+      .request()
+      .input("sol_ID", sql.Int, sol_ID)
+      .execute("Maqu.Solicitud_Detalles_VerMas");
+
+    if (result.recordset.length > 0) {
+      // Si la máquina existe, devuelve los datos
+      res.status(200).json(result.recordset[0]);
+    } else {
+      res.status(404).json({ message: "Máquina no encontrada" });
+    }
+  } catch (error) {
+    console.error("Error al obtener los detalles de la máquina:", error);
+    res.status(500).json({
+      message: "Error al obtener los detalles de la máquina. 500",
+      error: error.message,
+    });
+  }
+});
+
 
 
 app.listen(port, () => {
