@@ -2,7 +2,7 @@ const express = require("express");
 const sql = require("mssql");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 require("dotenv").config();
 
@@ -50,12 +50,10 @@ app.get("/api/topsolicitudes", async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las top 5 solicitudes:", err.message);
-    res
-      .status(500)
-      .json({
-        error: "Error al obtener las solicitudes",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Error al obtener las solicitudes",
+      details: err.message,
+    });
   }
 });
 
@@ -67,12 +65,10 @@ app.get("/api/solicitudes", async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las solicitudes:", err.message);
-    res
-      .status(500)
-      .json({
-        error: "Error al obtener las solicitudes",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Error al obtener las solicitudes",
+      details: err.message,
+    });
   }
 });
 
@@ -86,12 +82,10 @@ app.get("/api/solisrechazadas", async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las solicitudes:", err.message);
-    res
-      .status(500)
-      .json({
-        error: "Error al obtener las solicitudes",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Error al obtener las solicitudes",
+      details: err.message,
+    });
   }
 });
 
@@ -105,12 +99,10 @@ app.get("/api/solisaceptadas", async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error("Error al obtener las solicitudes:", err.message);
-    res
-      .status(500)
-      .json({
-        error: "Error al obtener las solicitudes",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Error al obtener las solicitudes",
+      details: err.message,
+    });
   }
 });
 
@@ -209,9 +201,6 @@ app.post("/api/insertarsolicitud", async (req, res) => {
   } = req.body;
 
   try {
-
-    
-    
     // Validar que haya exactamente 4 imágenes
     if (!images || images.length !== 4) {
       return res.status(400).json({
@@ -239,10 +228,14 @@ app.post("/api/insertarsolicitud", async (req, res) => {
       .input("sol_Descripcion", sql.NVarChar(sql.MAX), description)
       .input("sol_Precio", sql.NVarChar(20), price || null)
       .input("sol_IMG_1", sql.NVarChar(sql.MAX), images[0] || null)
-      .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1]|| null)
-      .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2]|| null)
+      .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1] || null)
+      .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2] || null)
       .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3] || null)
-      .input("sol_Comprobante", sql.NVarChar(sql.MAX), receipt ? receipt.url : null)
+      .input(
+        "sol_Comprobante",
+        sql.NVarChar(sql.MAX),
+        receipt ? receipt.url : null
+      )
       .input("sol_NombreCliente", sql.NVarChar(200), client)
       .input("sol_Telefono_1", sql.NVarChar(50), phoneNumber)
       .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null)
@@ -304,14 +297,13 @@ app.post("/api/insertarsolicitudtemp", async (req, res) => {
       .input("sol_IMG_2", sql.NVarChar(sql.MAX), images[1] || null)
       .input("sol_IMG_3", sql.NVarChar(sql.MAX), images[2] || null)
       .input("sol_IMG_4", sql.NVarChar(sql.MAX), images[3] || null)
-      .input("sol_Comprobante", sql.NVarChar(sql.MAX), null) 
+      .input("sol_Comprobante", sql.NVarChar(sql.MAX), null)
       .input("sol_NombreCliente", sql.NVarChar(200), client)
       .input("sol_Telefono_1", sql.NVarChar(50), phoneNumber)
       .input("sol_Telefono_2", sql.NVarChar(50), additionalPhoneNumber || null)
       .input("sol_Correo", sql.NVarChar(200), email)
       .execute("Maqu.UPD_InsertarSolicitud");
 
-   
     const solicitudId = result.recordset[0]?.SolicitudID || null;
 
     res.status(201).json({
@@ -330,22 +322,35 @@ app.post("/api/insertarsolicitudtemp", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
+  // Verificar que el password no esté vacío o indefinido
+  if (!password || typeof password !== "string") {
+    return res.status(400).json({ message: "La contraseña es requerida." });
+  }
+
   try {
     const pool = await sql.connect(dbConfig);
+
+    
+    const hashedPassword = crypto
+      .createHash("md5")  
+      .update(password, "utf-8") 
+      .digest("hex"); 
 
     const result = await pool
       .request()
       .input("usua_Email", sql.VarChar(100), email)
-      .input("usua_Password", sql.NVarChar(sql.MAX), password)
+      .input("usua_Password", sql.VarChar(255), hashedPassword) // Contraseña cifrada
       .execute("Acce.USP_VerificarUsuario");
 
     if (result.recordset.length === 0) {
-      return res.status(401).json({ message: "Credenciales incorrectas o usuario inactivo" });
+      return res
+        .status(401)
+        .json({ message: "Credenciales incorrectas o usuario inactivo" });
     }
 
     const user = result.recordset[0];
 
-    
+    // Generar el token JWT si las credenciales son correctas
     const token = jwt.sign(
       {
         id: user.usua_ID,
@@ -353,22 +358,23 @@ app.post("/api/login", async (req, res) => {
         email: user.usua_Email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" } 
+      { expiresIn: "1h" }
     );
 
     res.status(200).json({
       message: "Inicio de sesión exitoso",
-      token, 
+      token,
     });
-
   } catch (error) {
     console.error("Error en el login:", error);
-    res.status(500).json({ message: "Error en el servidor", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error en el servidor", error: error.message });
   }
 });
 
 app.post("/api/rechazarsolicitud", async (req, res) => {
-  const { sol_ID, rejection} = req.body;
+  const { sol_ID, rejection } = req.body;
 
   try {
     const pool = await sql.connect(dbConfig);
@@ -441,7 +447,7 @@ app.post("/api/insertar_categorias", async (req, res) => {
       .execute("Maqu.Insertar_Categoria");
 
     res.status(201).json({
-      message: "Categoría insertada correctamente."
+      message: "Categoría insertada correctamente.",
     });
   } catch (error) {
     console.error("Error al insertar la categoría:", error);
@@ -451,7 +457,6 @@ app.post("/api/insertar_categorias", async (req, res) => {
     });
   }
 });
-
 
 app.post("/api/actualizar_categorias", async (req, res) => {
   const { cat_ID, cat_Nombre, cat_Imagen } = req.body;
@@ -476,7 +481,7 @@ app.post("/api/actualizar_categorias", async (req, res) => {
       .execute("Maqu.Actualizar_Categoria");
 
     res.status(201).json({
-      message: "Categoría actualizada correctamente."
+      message: "Categoría actualizada correctamente.",
     });
   } catch (error) {
     console.error("Error al actualizar la categoría:", error);
@@ -486,7 +491,6 @@ app.post("/api/actualizar_categorias", async (req, res) => {
     });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Servidor backend escuchando en http://localhost:${port}`);
