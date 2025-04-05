@@ -1,6 +1,9 @@
 const express = require("express");
 const sql = require("mssql");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+
 require("dotenv").config();
 
 const app = express();
@@ -324,6 +327,15 @@ app.post("/api/insertarsolicitudtemp", async (req, res) => {
   }
 });
 
+// Simulando base de datos
+const users = [
+  {
+    id: 1,
+    username: "admin",
+    password: bcrypt.hashSync("1234", 10),
+  },
+];
+
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -336,20 +348,26 @@ app.post("/api/login", async (req, res) => {
       .input("usua_Password", sql.NVarChar(sql.MAX), password)
       .execute("Acce.USP_VerificarUsuario");
 
-    
     if (result.recordset.length === 0) {
       return res.status(401).json({ message: "Credenciales incorrectas o usuario inactivo" });
     }
 
     const user = result.recordset[0];
 
-    res.status(200).json({
-      message: "Inicio de sesión exitoso",
-      user: {
+    
+    const token = jwt.sign(
+      {
         id: user.usua_ID,
         name: user.usua_Nombre,
         email: user.usua_Email,
       },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" } 
+    );
+
+    res.status(200).json({
+      message: "Inicio de sesión exitoso",
+      token, 
     });
 
   } catch (error) {
