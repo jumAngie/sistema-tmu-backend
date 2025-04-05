@@ -327,15 +327,6 @@ app.post("/api/insertarsolicitudtemp", async (req, res) => {
   }
 });
 
-// Simulando base de datos
-const users = [
-  {
-    id: 1,
-    username: "admin",
-    password: bcrypt.hashSync("1234", 10),
-  },
-];
-
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
