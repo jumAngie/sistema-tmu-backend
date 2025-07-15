@@ -214,11 +214,8 @@ app.post("/api/insertarsolicitud", async (req, res) => {
         message: "Debe subir un comprobante de pago.",
       });
     }
-
-    // Conexión a la base de datos
     const pool = await sql.connect(dbConfig);
 
-    // Ejecutar el procedimiento almacenado
     const result = await pool
       .request()
       .input("cat_ID", sql.Int, category)
@@ -242,7 +239,6 @@ app.post("/api/insertarsolicitud", async (req, res) => {
       .input("sol_Correo", sql.NVarChar(200), email)
       .execute("Maqu.UPD_InsertarSolicitud");
 
-    // Extraer el ID generado por el procedimiento almacenado
     const solicitudId = result.recordset[0]?.SolicitudID || null;
 
     res.status(201).json({
@@ -379,7 +375,6 @@ app.post("/api/rechazarsolicitud", async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
 
-    // Ejecutar el procedimiento almacenado
     const result = await pool
       .request()
       .input("sol_ID", sql.Int, sol_ID)
@@ -399,12 +394,11 @@ app.post("/api/rechazarsolicitud", async (req, res) => {
 });
 
 app.get("/api/solicitud_detalles", async (req, res) => {
-  const { sol_ID } = req.query; // Tomamos el parámetro de la URL
+  const { sol_ID } = req.query;
 
   try {
     const pool = await sql.connect(dbConfig);
 
-    // Ejecutar el procedimiento almacenado para obtener los detalles de la máquina
     const result = await pool
       .request()
       .input("sol_ID", sql.Int, sol_ID)
@@ -429,7 +423,6 @@ app.post("/api/insertar_categorias", async (req, res) => {
   const { cat_Nombre, cat_Imagen } = req.body;
 
   try {
-    // Validar que los campos no estén vacíos
     if (!cat_Nombre || !cat_Imagen) {
       return res.status(400).json({
         message: "Todos los campos son requeridos.",
@@ -439,7 +432,6 @@ app.post("/api/insertar_categorias", async (req, res) => {
     // Conexión a la base de datos
     const pool = await sql.connect(dbConfig);
 
-    // Ejecutar el procedimiento almacenado
     const result = await pool
       .request()
       .input("cat_Nombre", sql.VarChar(100), cat_Nombre)
@@ -462,17 +454,14 @@ app.post("/api/actualizar_categorias", async (req, res) => {
   const { cat_ID, cat_Nombre, cat_Imagen } = req.body;
 
   try {
-    // Validar que los campos no estén vacíos
     if (!cat_ID || !cat_Nombre || !cat_Imagen) {
       return res.status(400).json({
         message: "Todos los campos son requeridos.",
       });
     }
 
-    // Conexión a la base de datos
     const pool = await sql.connect(dbConfig);
 
-    // Ejecutar el procedimiento almacenado
     const result = await pool
       .request()
       .input("cat_ID", sql.Int, cat_ID)
